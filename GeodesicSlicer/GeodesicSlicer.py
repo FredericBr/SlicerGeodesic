@@ -3,7 +3,7 @@
 # Copyright :
 # - EA7466 CHU Caen - Université de Caen Normandie,
 # - UMS 3408 CHU Caen - CNRS,
-# contributeurs : Frédéric Briend, Olivier Etard, Antoine Nourry, Nicolas Delcroix.
+# contributeurs : Frédéric Briend, Antoine Nourry, Nicolas Delcroix, Olivier Etard.
 # 01/07/2018.
 
 # briend@cyceron.fr ; olivier.etard@unicaen.fr
@@ -29,8 +29,8 @@
 # Copyright:
 # - EA7466 CHU Caen - Université de Caen Normandie,
 # - UMS 3408 CHU Caen - CNRS,
-# contributors: Frédéric Briend, Olivier Etard, Antoine Nourry, Nicolas Delcroix.
-# [date of creation].
+# contributors: Frédéric Briend, Antoine Nourry, Nicolas Delcroix, Olivier Etard.
+# 01/07/2018.
 
 # briend@cyceron.fr ; olivier.etard@unicaen.fr
 
