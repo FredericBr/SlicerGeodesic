@@ -9,8 +9,8 @@ This module calculates geodesic path in 3D structure. Thanks to this geodesic pa
 - For 3D Slicer community announcements and support, visit: https://discourse.slicer.org
 
 ### License
-CeCILL FREE SOFTWARE LICENSE AGREEMENT
-See License.txt for information on using and contributing.
+- This extension is under the [CeCILL FREE SOFTWARE LICENSE AGREEMENT](http://www.cecill.info/licences/Licence_CeCILL_V2.1-en.html), a copyleft license.
+- See License.txt for information on using and contributing.
 
 ### Template
 In Example_template folder
