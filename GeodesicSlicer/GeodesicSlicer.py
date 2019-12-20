@@ -80,14 +80,15 @@ class GeodesicSlicer(ScriptedLoadableModule):
     self.parent.helpText = """
 This module calculates geodesic path in 3D structure. Thanks to this geodesic path, this module can draw an EEG 10-20 system, 
 determine the projected scalp stimulation site and correct the rTMS resting motor threshold by correction factor.
-<p><li>See <a href="https://www.slicer.org/wiki/Documentation/4.10/Modules/GeodesicSlicer">Geodesic Slicer documentation</a> for more details.</li>
+<p><li>See <a href="https://www.slicer.org/wiki/Documentation/Nightly/Modules/GeodesicSlicer">Geodesic Slicer documentation</a> for more details.</li>
 """
     #self.parent.helpText += self.getDefaultModuleDocumentationLink()
     self.parent.acknowledgementText = """
 This module was developed by Frederic Briend and Antoine Nourry. Thank you to Andras Lasso, Csaba Pinter, Clement Nathou, Olivier Etard and Sonia Dollfus.
 <p>GeodesicSlicer is a research tool. It may not be accurate, use it at your own risk. Moreover, this extension is under the CeCILL FREE SOFTWARE LICENSE AGREEMENT, a copyleft license.
-<p>This work was supported by CHU Caen, Region Normandie and UNICAEN. If you use this module, please cite the following article:
-<li>* Briend F. et al., Personalized or standardized target for the treatment of auditory hallucinations by rTMS? Brain Stimulation, submitted</li>
+<p>This work was supported by CHU Caen, Region Normandie and UNICAEN. If you use this module, please cite the following articles:
+<li>*Briend F. et al., A new toolbox to compare NIBS localization method: Application for auditory hallucinations in schizophrenia. Schizophrenia Research, Under Review</li>
+<li>*Briend F. et al., GeodesicSlicer: A Slicer toolbox for targeting brain stimulation. Neuroinformatics, In revision</li>
 """ # replace with organization, grant and thanks.
 
 #
