@@ -88,7 +88,7 @@ This module was developed by Frederic Briend and Antoine Nourry. Thank you to An
 <p>GeodesicSlicer is a research tool. It may not be accurate, use it at your own risk. Moreover, this extension is under the CeCILL FREE SOFTWARE LICENSE AGREEMENT, a copyleft license.
 <p>This work was supported by CHU Caen, Region Normandie and UNICAEN. If you use this module, please cite the following articles:
 <li>*Briend F. et al., A new toolbox to compare NIBS localization method: Application for auditory hallucinations in schizophrenia. Schizophrenia Research, Under Review</li>
-<li>*Briend F. et al., GeodesicSlicer: A Slicer toolbox for targeting brain stimulation. Neuroinformatics, In revision</li>
+<li>*Briend F. et al., GeodesicSlicer: a Slicer Toolbox for Targeting Brain Stimulation. Neuroinformatics. https://doi.org/10.1007/s12021-020-09457-9</li>
 """ # replace with organization, grant and thanks.
 
 #
