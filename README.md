@@ -16,4 +16,4 @@ This module calculates geodesic path in 3D structure. Thanks to this geodesic pa
 In Example_template folder
 
 ## How to cite
-Article in progress
+Briend F. et al., GeodesicSlicer: a Slicer Toolbox for Targeting Brain Stimulation. Neuroinformatics. https://doi.org/10.1007/s12021-020-09457-9
