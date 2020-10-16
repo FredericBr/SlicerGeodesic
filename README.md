@@ -17,4 +17,4 @@ In Example_template folder
 
 ## How to cite
 - Briend F. et al., GeodesicSlicer: a Slicer Toolbox for Targeting Brain Stimulation. Neuroinformatics. https://doi.org/10.1007/s12021-020-09457-9
-- Briend F. et al., A new toolbox to compare NIBS localization method: Application for auditory hallucinations in schizophrenia. Schizophrenia Research, submitted.
+- Briend F. et al., A new toolbox to compare NIBS localization method: Application for auditory hallucinations in schizophrenia. Schizophrenia Research, https://doi.org/10.1016/j.schres.2020.09.001
