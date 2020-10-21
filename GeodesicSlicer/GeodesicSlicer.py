@@ -76,7 +76,7 @@ class GeodesicSlicer(ScriptedLoadableModule):
     self.parent.title = "Geodesic Slicer" # TODO make this more human readable by adding spaces
     self.parent.categories = ["Informatics"]
     self.parent.dependencies = []
-    self.parent.contributors = ["Frederic Briend (ISTS, UNICAEN), Antoine Nourry (UMS 3408, UNICAEN), Nicolas Delcroix (UMS 3408, UNICAEN), Olivier Etard (ISTS, UNICAEN, CHU Caen)"]
+    self.parent.contributors = ["Frederic Briend (IBrain -UMR12353, Tours-, ISTS -EA, UNICAEN-), Antoine Nourry (-UMS 3408, UNICAEN), Nicolas Delcroix (UMS 3408, UNICAEN), Olivier Etard (ISTS, UNICAEN, CHU Caen)"]
     self.parent.helpText = """
 This module calculates geodesic path in 3D structure. Thanks to this geodesic path, this module can draw an EEG 10-20 system,
 determine the projected scalp stimulation site and correct the rTMS resting motor threshold by correction factor.
