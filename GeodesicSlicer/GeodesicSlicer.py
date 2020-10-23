@@ -466,14 +466,14 @@ class GeodesicSlicerWidget(ScriptedLoadableModuleWidget):
 
   def onTubeUpdated(self, newValue):
     logic = GeodesicSlicerLogic()
-    #print "MT unadjusted:", newValue
+    #print ("MT unadjusted:", newValue)
     logic.setMTunadjusted(newValue)
     self.skip = int(newValue)
 
   def onApplyCorrect(self):
     logic = GeodesicSlicerLogic()
     self.MTunadjusted = self.skip
-    # print self.MTunadjusted
+    # print (self.MTunadjusted)
     slicer.app.processEvents()
     logic.CorrectedPoint(self.SourceSelector2, self.inputTargetModelSelector.currentNode(),self.MTunadjusted,self.MTadjusted,self.MTadjusted2)
 
@@ -568,7 +568,7 @@ class GeodesicSlicerLogic(ScriptedLoadableModuleLogic):
     slicer.app.processEvents()
     # model filename
     nom = inputVolume.GetName()
-    print nom
+    print(nom)
     masterVolumeNode = slicer.util.getNode(nom)
     ##make the mesh
     # Create segmentation
@@ -599,6 +599,7 @@ class GeodesicSlicerLogic(ScriptedLoadableModuleLogic):
     # effect.setParameter("SmoothingMethod", "GAUSSIAN")
     # effect.setParameter("GaussianStandardDeviationMm", 2)
     effect.self().onApply()
+    print(nom)
     ###display output
     progressBar.value = 30
     # Clean up
@@ -607,13 +608,16 @@ class GeodesicSlicerLogic(ScriptedLoadableModuleLogic):
     # Make segmentation results visible in 3D
     segmentationNode.CreateClosedSurfaceRepresentation()
     # Fix normals
-    surfaceMesh = segmentationNode.GetClosedSurfaceRepresentation(addedSegmentID)
+    surfaceMesh = vtk.vtkPolyData()
+    segmentationNode.GetClosedSurfaceRepresentation(addedSegmentID, surfaceMesh)
     normals = vtk.vtkPolyDataNormals() #to normal data
-    normals.SetAutoOrientNormals(True) #to normal data
+    normals.AutoOrientNormalsOn()
+    #normals.SetAutoOrientNormals(True) #to normal data
     normals.ConsistencyOn() #to normal data
     normals.SetInputData(surfaceMesh) #to normal data
     normals.Update() #to normal data
     surfaceMesh = normals.GetOutput() #to normal data
+
     ###display output
     progressBar.value = 80
     #Write to STL file
@@ -624,21 +628,45 @@ class GeodesicSlicerLogic(ScriptedLoadableModuleLogic):
     nom=filename2+'.stl'
     logging.info('Model is writing')
     writer.SetFileName(nom)
+    writer.SetHeader("GeodesicSlicer output. SPACE=RAS")
     writer.Update()
     ##load this model
     name = inputVolume.GetName()
-    #print name
+    #print (name)
     volumeNode2 = slicer.util.getNode(name)
     filename2 = volumeNode2.GetStorageNode().GetFileName()
     name2=filename2+'.stl'
-    #print name2
-    slicer.util.loadModel((name2), returnNode=True)[1]
+    #print (name2)
+    SegNode_View = slicer.util.getNode('vtkMRMLSegmentationNode1')
+    SegNode_View.SetDisplayVisibility(0)
+
+    slicer.util.loadModel(name2)
+
+    #Add skin color
+    ModelNode_color= slicer.util.getNode('vtkMRMLModelNode4')
+    displayNode = ModelNode_color.GetDisplayNode()
+    RGB_COLOR = 0.6941176470588235, 0.47843137254901963, 0.396078431372549
+    displayNode.SetColor(RGB_COLOR)
+
+    base=os.path.basename(name2)
+    base2=os.path.splitext(base)[0]
+
+    # Rotation of the model (to be in LPS)
+    # filename = "C:/Users/briend/Downloads/Template.nii.stl"
+    # slicer.util.loadModel(filename)
+    # model=slicer.util.getNode(base2)
+    # transformNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLTransformNode")
+    # model.SetAndObserveTransformNodeID(transformNode.GetID())
+    # transform = vtk.vtkTransform()
+    # transform.RotateZ(180)
+    # transformNode.SetMatrixTransformToParent(transform.GetMatrix())
+
     progressBar.value = 100
     logging.info('Processing completed here '+nom)
 
   def mesh2(self,inputVolume):
     """
-    Since the ExtractSkin.py, with big smoothing effect (in order to projhect the stimulation site module)
+    Since the ExtractSkin.py, with big smoothing effect (in order to project the stimulation site module)
     """
     # inputVolume added ?
     if not inputVolume:
@@ -653,7 +681,7 @@ class GeodesicSlicerLogic(ScriptedLoadableModuleLogic):
     slicer.app.processEvents()
     # model filename
     nom = inputVolume.GetName()
-    print nom
+    print(nom)
     masterVolumeNode = slicer.util.getNode(nom)
     ##make the mesh
     # Create segmentation
@@ -698,9 +726,11 @@ class GeodesicSlicerLogic(ScriptedLoadableModuleLogic):
     # Make segmentation results visible in 3D
     segmentationNode.CreateClosedSurfaceRepresentation()
     # Fix normals
-    surfaceMesh = segmentationNode.GetClosedSurfaceRepresentation(addedSegmentID)
+    surfaceMesh = vtk.vtkPolyData()
+    segmentationNode.GetClosedSurfaceRepresentation(addedSegmentID, surfaceMesh)
     normals = vtk.vtkPolyDataNormals() #to normal data
-    normals.SetAutoOrientNormals(True) #to normal data
+    normals.AutoOrientNormalsOn()
+    #normals.SetAutoOrientNormals(True) #to normal data
     normals.ConsistencyOn() #to normal data
     normals.SetInputData(surfaceMesh) #to normal data
     normals.Update() #to normal data
@@ -716,15 +746,40 @@ class GeodesicSlicerLogic(ScriptedLoadableModuleLogic):
     nom=filename2+'.stl'
     logging.info('Model is writing')
     writer.SetFileName(nom)
+    writer.SetHeader("GeodesicSlicer output. SPACE=RAS")
     writer.Update()
     ##load this model
     name = inputVolume.GetName()
-    #print name
+    #print(name)
     volumeNode2 = slicer.util.getNode(name)
     filename2 = volumeNode2.GetStorageNode().GetFileName()
     name2=filename2+'.stl'
-    #print name2
-    slicer.util.loadModel((name2), returnNode=True)[1]
+    #print (name2)
+    #hide the segmentation view
+    SegNode_View = slicer.util.getNode('vtkMRMLSegmentationNode1')
+    SegNode_View.SetDisplayVisibility(0)
+    slicer.util.loadModel(name2)
+
+    #Add skin color
+    ModelNode_color= slicer.util.getNode('vtkMRMLModelNode4')
+    displayNode = ModelNode_color.GetDisplayNode()
+    RGB_COLOR = 0.6941176470588235, 0.47843137254901963, 0.396078431372549
+    displayNode.SetColor(RGB_COLOR)
+    #displayNode.GetColor #to pick the good color up from slicer
+
+    base=os.path.basename(name2)
+    base2=os.path.splitext(base)[0]
+
+    # Rotation of the model (to be in LPS)
+    # filename = "C:/Users/briend/Downloads/Template.nii.stl"
+    # slicer.util.loadModel(filename)
+    # model=slicer.util.getNode(base2)
+    # transformNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLTransformNode")
+    # model.SetAndObserveTransformNodeID(transformNode.GetID())
+    # transform = vtk.vtkTransform()
+    # transform.RotateZ(180)
+    # transformNode.SetMatrixTransformToParent(transform.GetMatrix())
+
     progressBar.value = 100
     logging.info('Processing completed here '+nom)
 
@@ -762,7 +817,7 @@ class GeodesicSlicerLogic(ScriptedLoadableModuleLogic):
     for i in range(numFids):
         ras = [0,0,0]
         fiducialInput.currentNode().GetNthFiducialPosition(i,ras)
-        #print i,": RAS =",ras
+        #print(i,": RAS =",ras)
         list.append(ras)
 
     # locator
@@ -794,7 +849,7 @@ class GeodesicSlicerLogic(ScriptedLoadableModuleLogic):
 
         #create geodesic path: vtkDijkstraGraphGeodesicPath
         dijkstra = vtk.vtkDijkstraGraphGeodesicPath()
-        dijkstra.SetInputConnection(pd.GetOutputPolyDataConnection())
+        dijkstra.SetInputConnection(pd.GetOutputMeshConnection())
         dijkstra.SetStartVertex(v0)
         dijkstra.SetEndVertex(v1)
         dijkstra.Update()
@@ -814,7 +869,7 @@ class GeodesicSlicerLogic(ScriptedLoadableModuleLogic):
 
 
     # display output
-    print 'length= ' , (dist/10) , ' cm'
+    print ('length= ' , (dist/10) , ' cm')
     lengthInput.text = (dist/10)
 
 
@@ -861,7 +916,7 @@ class GeodesicSlicerLogic(ScriptedLoadableModuleLogic):
     for i in range(numFids):
         ras = [0,0,0]
         fiducialInput.currentNode().GetNthFiducialPosition(i,ras)
-        #print i,": RAS =",ras
+        #print (i,": RAS =",ras)
         list.append(ras)
 
     # locator
@@ -892,12 +947,12 @@ class GeodesicSlicerLogic(ScriptedLoadableModuleLogic):
         v1 = fiducials[n+1]
 
         m = n +1
-        #print m
+        #print (m)
         if m > 0:
             progressBar.value = 100-(100/m)
             slicer.app.processEvents()
 
-        model2 = slicer.util.loadModel(filename, returnNode=True)[1]
+        model2 = slicer.util.loadModel(filename)
         model2.GetDisplayNode().SetColor(1,0,0)
         dijkstra2 = vtk.vtkDijkstraGraphGeodesicPath()
         dijkstra2.SetInputConnection(model2.GetPolyDataConnection())
@@ -946,7 +1001,7 @@ class GeodesicSlicerLogic(ScriptedLoadableModuleLogic):
     for i in range(numFids):
       ras = [0,0,0]
       fiducialInput.currentNode().GetNthFiducialPosition(i,ras)
-      #print i,": RAS =",ras
+      #print (i,": RAS =",ras)
       list.append(ras)
 
     #create point (Near_Cz) de passage au niveau du top of the scalp
@@ -994,7 +1049,7 @@ class GeodesicSlicerLogic(ScriptedLoadableModuleLogic):
 
             #create geodesic path: vtkDijkstraGraphGeodesicPath
             dijkstra = vtk.vtkDijkstraGraphGeodesicPath()
-            dijkstra.SetInputConnection(pd.GetOutputPolyDataConnection())
+            dijkstra.SetInputConnection(pd.GetOutputMeshConnection())
             dijkstra.SetStartVertex(v0)
             dijkstra.SetEndVertex(v1)
             dijkstra.Update()
@@ -1031,7 +1086,7 @@ class GeodesicSlicerLogic(ScriptedLoadableModuleLogic):
         du = [0]*9
         spline.Evaluate(u, Cz_tmp_sag, du)
         closestPointIdCz_tmp_sag = loc.FindClosestPoint(Cz_tmp_sag)
-        #print 'Cz_tmp_sag= ', Cz_tmp_sag, closestPointIdCz_tmp_sag
+        #print ('Cz_tmp_sag= ', Cz_tmp_sag, closestPointIdCz_tmp_sag)
         #//begin Cz Ligne EEG Coronal
         vIds2 = [closestPointId3,closestPointIdCz_tmp_sag,closestPointId2]
         ##get the distance of the geodesic path
@@ -1045,7 +1100,7 @@ class GeodesicSlicerLogic(ScriptedLoadableModuleLogic):
 
             #create geodesic path: vtkDijkstraGraphGeodesicPath
             dijkstra2 = vtk.vtkDijkstraGraphGeodesicPath()
-            dijkstra2.SetInputConnection(pd.GetOutputPolyDataConnection())
+            dijkstra2.SetInputConnection(pd.GetOutputMeshConnection())
             dijkstra2.SetStartVertex(v0)
             dijkstra2.SetEndVertex(v1)
             dijkstra2.Update()
@@ -1082,9 +1137,9 @@ class GeodesicSlicerLogic(ScriptedLoadableModuleLogic):
         du = [0]*9
         spline2.Evaluate(u, Cz_tmp_cor, du)
         closestPointIdCz_tmp_cor = loc.FindClosestPoint(Cz_tmp_cor)
-        #print 'Cz_tmp_cor= ', Cz_tmp_cor, closestPointIdCz_tmp_cor
+        #print ('Cz_tmp_cor= ', Cz_tmp_cor, closestPointIdCz_tmp_cor)
         if closestPointIdCz_tmp_cor == closestPointIdCz_tmp_sag:
-            print 'cor= ', Length_coronal2, 'sag= ',Length_sagital2
+            print ('cor= ', Length_coronal2, 'sag= ',Length_sagital2)
             num_Cz_tmp_cor=slicer.modules.markups.logic().AddFiducial(Cz_tmp_cor[0],Cz_tmp_cor[1],Cz_tmp_cor[2])
             fidNode.SetNthFiducialLabel(num_Cz_tmp_cor, "Cz")
             Cz=Cz_tmp_cor
@@ -1108,7 +1163,7 @@ class GeodesicSlicerLogic(ScriptedLoadableModuleLogic):
         v1 = vIds[n+1]
         #create geodesic path: vtkDijkstraGraphGeodesicPath
         dijkstra = vtk.vtkDijkstraGraphGeodesicPath()
-        dijkstra.SetInputConnection(pd.GetOutputPolyDataConnection())
+        dijkstra.SetInputConnection(pd.GetOutputMeshConnection())
         dijkstra.SetStartVertex(v0)
         dijkstra.SetEndVertex(v1)
         dijkstra.Update()
@@ -1141,7 +1196,7 @@ class GeodesicSlicerLogic(ScriptedLoadableModuleLogic):
     Fpz = [0]*3
     du = [0]*9
     spline.Evaluate(u, Fpz, du)
-    #print 'Fpz= ', Fpz
+    #print ('Fpz= ', Fpz)
     num_Fpz=slicer.modules.markups.logic().AddFiducial(Fpz[0],Fpz[1],Fpz[2])
     fidNode.SetNthFiducialLabel(num_Fpz, "Fpz") #chgt nom; n correspond au points 0 nazion ,1 inion,...
     #Fz
@@ -1149,7 +1204,7 @@ class GeodesicSlicerLogic(ScriptedLoadableModuleLogic):
     Fz = [0]*3
     du = [0]*9
     spline.Evaluate(u, Fz, du)
-    #print 'Fz= ', Fz
+    #print ('Fz= ', Fz)
     num_Fz=slicer.modules.markups.logic().AddFiducial(Fz[0],Fz[1],Fz[2])
     fidNode.SetNthFiducialLabel(num_Fz, "Fz") #chgt nom; n correspond au points 0 nazion ,1 inion,...
     #Pz
@@ -1157,7 +1212,7 @@ class GeodesicSlicerLogic(ScriptedLoadableModuleLogic):
     Pz = [0]*3
     du = [0]*9
     spline.Evaluate(u, Pz, du)
-    #print 'Pz= ', Pz
+    #print ('Pz= ', Pz)
     num_Pz=slicer.modules.markups.logic().AddFiducial(Pz[0],Pz[1],Pz[2])
     fidNode.SetNthFiducialLabel(num_Pz, "Pz") #chgt nom; n correspond au points 0 nazion ,1 inion,...
     #Oz
@@ -1165,7 +1220,7 @@ class GeodesicSlicerLogic(ScriptedLoadableModuleLogic):
     Oz = [0]*3
     du = [0]*9
     spline.Evaluate(u, Oz, du)
-    #print 'Oz= ', Oz
+    #print ('Oz= ', Oz)
     num_Oz=slicer.modules.markups.logic().AddFiducial(Oz[0],Oz[1],Oz[2])
     fidNode.SetNthFiducialLabel(num_Oz, "Oz") #chgt nom; n correspond au points 0 nazion ,1 inion,...
     # ###display output
@@ -1182,7 +1237,7 @@ class GeodesicSlicerLogic(ScriptedLoadableModuleLogic):
         v1 = vIds2[n+1]
         #create geodesic path: vtkDijkstraGraphGeodesicPath
         dijkstra2 = vtk.vtkDijkstraGraphGeodesicPath()
-        dijkstra2.SetInputConnection(pd.GetOutputPolyDataConnection())
+        dijkstra2.SetInputConnection(pd.GetOutputMeshConnection())
         dijkstra2.SetStartVertex(v0)
         dijkstra2.SetEndVertex(v1)
         dijkstra2.Update()
@@ -1214,7 +1269,7 @@ class GeodesicSlicerLogic(ScriptedLoadableModuleLogic):
     T3 = [0]*3
     du = [0]*9
     spline2.Evaluate(u, T3, du)
-    #print 'T3= ', T3
+    #print ('T3= ', T3)
     num_T3=slicer.modules.markups.logic().AddFiducial(T3[0],T3[1],T3[2])
     fidNode.SetNthFiducialLabel(num_T3, "T3") #chgt nom; n correspond au points 0 nazion ,1 inion,...
     #C3
@@ -1222,7 +1277,7 @@ class GeodesicSlicerLogic(ScriptedLoadableModuleLogic):
     C3 = [0]*3
     du = [0]*9
     spline2.Evaluate(u, C3, du)
-    #print 'C3= ', C3
+    #print ('C3= ', C3)
     num_C3=slicer.modules.markups.logic().AddFiducial(C3[0],C3[1],C3[2])
     fidNode.SetNthFiducialLabel(num_C3, "C3") #chgt nom; n correspond au points 0 nazion ,1 inion,...
     closestPointIdC3 = loc.FindClosestPoint(C3)
@@ -1231,7 +1286,7 @@ class GeodesicSlicerLogic(ScriptedLoadableModuleLogic):
     C4 = [0]*3
     du = [0]*9
     spline2.Evaluate(u, C4, du)
-    #print 'C4= ', C4
+    #print ('C4= ', C4)
     num_C4=slicer.modules.markups.logic().AddFiducial(C4[0],C4[1],C4[2])
     fidNode.SetNthFiducialLabel(num_C4, "C4") #chgt nom; n correspond au points 0 nazion ,1 inion,...
     closestPointIdC4 = loc.FindClosestPoint(C4)
@@ -1240,7 +1295,7 @@ class GeodesicSlicerLogic(ScriptedLoadableModuleLogic):
     T4 = [0]*3
     du = [0]*9
     spline2.Evaluate(u, T4, du)
-    #print 'T4= ', T4
+    #print ('T4= ', T4)
     num_T4=slicer.modules.markups.logic().AddFiducial(T4[0],T4[1],T4[2])
     fidNode.SetNthFiducialLabel(num_T4, "T4") #chgt nom; n correspond au points 0 nazion ,1 inion,...
     # ###display output
@@ -1260,7 +1315,7 @@ class GeodesicSlicerLogic(ScriptedLoadableModuleLogic):
         v1 = vIds3[n+1]
         #create geodesic path: vtkDijkstraGraphGeodesicPath
         dijkstra3 = vtk.vtkDijkstraGraphGeodesicPath()
-        dijkstra3.SetInputConnection(pd.GetOutputPolyDataConnection())
+        dijkstra3.SetInputConnection(pd.GetOutputMeshConnection())
         dijkstra3.SetStartVertex(v0)
         dijkstra3.SetEndVertex(v1)
         dijkstra3.Update()
@@ -1292,7 +1347,7 @@ class GeodesicSlicerLogic(ScriptedLoadableModuleLogic):
     O1 = [0]*3
     du = [0]*9
     spline3.Evaluate(u, O1, du)
-    #print 'O1= ', O1
+    #print ('O1= ', O1)
     num_O1=slicer.modules.markups.logic().AddFiducial(O1[0],O1[1],O1[2])
     fidNode.SetNthFiducialLabel(num_O1, "O1") #chgt nom; n correspond au points 0 nazion ,1 inion,...
     closestPointIdO1 = loc.FindClosestPoint(O1)
@@ -1301,7 +1356,7 @@ class GeodesicSlicerLogic(ScriptedLoadableModuleLogic):
     T5 = [0]*3
     du = [0]*9
     spline3.Evaluate(u, T5, du)
-    #print 'T5= ', T5
+    #print ('T5= ', T5)
     num_T5=slicer.modules.markups.logic().AddFiducial(T5[0],T5[1],T5[2])
     fidNode.SetNthFiducialLabel(num_T5, "T5") #chgt nom; n correspond au points 0 nazion ,1 inion,...
     closestPointIdT5 = loc.FindClosestPoint(T5)
@@ -1310,7 +1365,7 @@ class GeodesicSlicerLogic(ScriptedLoadableModuleLogic):
     F7 = [0]*3
     du = [0]*9
     spline3.Evaluate(u, F7, du)
-    #print 'F7= ', F7
+    #print ('F7= ', F7)
     num_F7=slicer.modules.markups.logic().AddFiducial(F7[0],F7[1],F7[2])
     fidNode.SetNthFiducialLabel(num_F7, "F7") #chgt nom; n correspond au points 0 nazion ,1 inion,...
     #Fp1
@@ -1318,7 +1373,7 @@ class GeodesicSlicerLogic(ScriptedLoadableModuleLogic):
     Fp1 = [0]*3
     du = [0]*9
     spline3.Evaluate(u, Fp1, du)
-    #print 'Fp1= ', Fp1
+    #print ('Fp1= ', Fp1)
     num_Fp1=slicer.modules.markups.logic().AddFiducial(Fp1[0],Fp1[1],Fp1[2])
     fidNode.SetNthFiducialLabel(num_Fp1, "Fp1") #chgt nom; n correspond au points 0 nazion ,1 inion,...
     closestPointIdFp1 = loc.FindClosestPoint(Fp1)
@@ -1339,7 +1394,7 @@ class GeodesicSlicerLogic(ScriptedLoadableModuleLogic):
         v1 = vIds4[n+1]
         #create geodesic path: vtkDijkstraGraphGeodesicPath
         dijkstra4 = vtk.vtkDijkstraGraphGeodesicPath()
-        dijkstra4.SetInputConnection(pd.GetOutputPolyDataConnection())
+        dijkstra4.SetInputConnection(pd.GetOutputMeshConnection())
         dijkstra4.SetStartVertex(v0)
         dijkstra4.SetEndVertex(v1)
         dijkstra4.Update()
@@ -1371,7 +1426,7 @@ class GeodesicSlicerLogic(ScriptedLoadableModuleLogic):
     O2 = [0]*3
     du = [0]*9
     spline4.Evaluate(u, O2, du)
-    #print 'O2= ', O2
+    #print ('O2= ', O2)
     num_O2=slicer.modules.markups.logic().AddFiducial(O2[0],O2[1],O2[2])
     fidNode.SetNthFiducialLabel(num_O2, "O2") #chgt nom; n correspond au points 0 nazion ,1 inion,...
     closestPointIdO2 = loc.FindClosestPoint(O2)
@@ -1380,7 +1435,7 @@ class GeodesicSlicerLogic(ScriptedLoadableModuleLogic):
     T6 = [0]*3
     du = [0]*9
     spline4.Evaluate(u, T6, du)
-    #print 'T6= ', T6
+    #print ('T6= ', T6)
     num_T6=slicer.modules.markups.logic().AddFiducial(T6[0],T6[1],T6[2])
     fidNode.SetNthFiducialLabel(num_T6, "T6") #chgt nom; n correspond au points 0 nazion ,1 inion,...
     #F8
@@ -1388,7 +1443,7 @@ class GeodesicSlicerLogic(ScriptedLoadableModuleLogic):
     F8 = [0]*3
     du = [0]*9
     spline4.Evaluate(u, F8, du)
-    #print 'F8= ', F8
+    #print ('F8= ', F8)
     num_F8=slicer.modules.markups.logic().AddFiducial(F8[0],F8[1],F8[2])
     fidNode.SetNthFiducialLabel(num_F8, "F8") #chgt nom; n correspond au points 0 nazion ,1 inion,...
     #Fp2
@@ -1396,7 +1451,7 @@ class GeodesicSlicerLogic(ScriptedLoadableModuleLogic):
     Fp2 = [0]*3
     du = [0]*9
     spline4.Evaluate(u, Fp2, du)
-    #print 'Fp2= ', Fp2
+    #print ('Fp2= ', Fp2)
     num_Fp2=slicer.modules.markups.logic().AddFiducial(Fp2[0],Fp2[1],Fp2[2])
     fidNode.SetNthFiducialLabel(num_Fp2, "Fp2") #chgt nom; n correspond au points 0 nazion ,1 inion,...
     closestPointIdFp2 = loc.FindClosestPoint(Fp2)
@@ -1417,7 +1472,7 @@ class GeodesicSlicerLogic(ScriptedLoadableModuleLogic):
         v1 = vIds5[n+1]
         #create geodesic path: vtkDijkstraGraphGeodesicPath
         dijkstra5 = vtk.vtkDijkstraGraphGeodesicPath()
-        dijkstra5.SetInputConnection(pd.GetOutputPolyDataConnection())
+        dijkstra5.SetInputConnection(pd.GetOutputMeshConnection())
         dijkstra5.SetStartVertex(v0)
         dijkstra5.SetEndVertex(v1)
         dijkstra5.Update()
@@ -1449,7 +1504,7 @@ class GeodesicSlicerLogic(ScriptedLoadableModuleLogic):
     P3 = [0]*3
     du = [0]*9
     spline5.Evaluate(u, P3, du)
-    #print 'P3= ', P3
+    #print ('P3= ', P3)
     num_P3=slicer.modules.markups.logic().AddFiducial(P3[0],P3[1],P3[2])
     fidNode.SetNthFiducialLabel(num_P3, "P3") #chgt nom; n correspond au points 0 nazion ,1 inion,...
     #P4
@@ -1457,7 +1512,7 @@ class GeodesicSlicerLogic(ScriptedLoadableModuleLogic):
     P4 = [0]*3
     du = [0]*9
     spline5.Evaluate(u, P4, du)
-    #print 'P4= ', P4
+    #print ('P4= ', P4)
     num_P4=slicer.modules.markups.logic().AddFiducial(P4[0],P4[1],P4[2])
     fidNode.SetNthFiducialLabel(num_P4, "P4") #chgt nom; n correspond au points 0 nazion ,1 inion,...
     closestPointIdP4 = loc.FindClosestPoint(P4)
@@ -1478,7 +1533,7 @@ class GeodesicSlicerLogic(ScriptedLoadableModuleLogic):
         v1 = vIds6[n+1]
         #create geodesic path: vtkDijkstraGraphGeodesicPath
         dijkstra6 = vtk.vtkDijkstraGraphGeodesicPath()
-        dijkstra6.SetInputConnection(pd.GetOutputPolyDataConnection())
+        dijkstra6.SetInputConnection(pd.GetOutputMeshConnection())
         dijkstra6.SetStartVertex(v0)
         dijkstra6.SetEndVertex(v1)
         dijkstra6.Update()
@@ -1510,7 +1565,7 @@ class GeodesicSlicerLogic(ScriptedLoadableModuleLogic):
     F3 = [0]*3
     du = [0]*9
     spline6.Evaluate(u, F3, du)
-    #print 'F3= ', F3
+    #print ('F3= ', F3)
     num_F3=slicer.modules.markups.logic().AddFiducial(F3[0],F3[1],F3[2])
     fidNode.SetNthFiducialLabel(num_F3, "F3") #chgt nom; n correspond au points 0 nazion ,1 inion,...
     closestPointIdF3 = loc.FindClosestPoint(F3)
@@ -1519,7 +1574,7 @@ class GeodesicSlicerLogic(ScriptedLoadableModuleLogic):
     F4 = [0]*3
     du = [0]*9
     spline6.Evaluate(u, F4, du)
-    #print 'F4= ', F4
+    #print ('F4= ', F4)
     num_F4=slicer.modules.markups.logic().AddFiducial(F4[0],F4[1],F4[2])
     fidNode.SetNthFiducialLabel(num_F4, "F4") #chgt nom; n correspond au points 0 nazion ,1 inion,...
     closestPointIdF4 = loc.FindClosestPoint(F4)
@@ -1539,7 +1594,7 @@ class GeodesicSlicerLogic(ScriptedLoadableModuleLogic):
         v1 = vIds7[n+1]
         #create geodesic path: vtkDijkstraGraphGeodesicPath
         dijkstra7 = vtk.vtkDijkstraGraphGeodesicPath()
-        dijkstra7.SetInputConnection(pd.GetOutputPolyDataConnection())
+        dijkstra7.SetInputConnection(pd.GetOutputMeshConnection())
         dijkstra7.SetStartVertex(v0)
         dijkstra7.SetEndVertex(v1)
         dijkstra7.Update()
@@ -1589,13 +1644,13 @@ class GeodesicSlicerLogic(ScriptedLoadableModuleLogic):
         p0 = [0,0,0]
         p1 = [0,0,0]
         dist = 0.0
-        #print vIds_ctrl
+        #print (vIds_ctrl)
         for n in range(len(vIds_ctrl)-1):
             v0 = vIds_ctrl[n]
             v1 = vIds_ctrl[n+1]
             #create geodesic path: vtkDijkstraGraphGeodesicPath
             dijkstra = vtk.vtkDijkstraGraphGeodesicPath()
-            dijkstra.SetInputConnection(pd.GetOutputPolyDataConnection())
+            dijkstra.SetInputConnection(pd.GetOutputMeshConnection())
             dijkstra.SetStartVertex(v0)
             dijkstra.SetEndVertex(v1)
             dijkstra.Update()
@@ -1660,7 +1715,7 @@ class GeodesicSlicerLogic(ScriptedLoadableModuleLogic):
 
     #list of all mesh point
     all_mesh_points=[]
-    for i in xrange(0, inputModel.GetPolyData().GetNumberOfPoints()):
+    for i in range(0, inputModel.GetPolyData().GetNumberOfPoints()):
       p=inputModel.GetPolyData().GetPoint(i)
       all_mesh_points.append(p)
 
@@ -1673,7 +1728,7 @@ class GeodesicSlicerLogic(ScriptedLoadableModuleLogic):
     #end=end[1:6]
     index = 0
     for f in end:
-      #print f,index,end[index][0]
+      #print (f,index,end[index][0])
       if end[index][0]<0 :
         left.append(f)
       else:
@@ -1728,8 +1783,8 @@ class GeodesicSlicerLogic(ScriptedLoadableModuleLogic):
     pos2=dist_stim_EEG.index(dist_stim_EEG_3lowest[1]) #know their position
     pos3=dist_stim_EEG.index(dist_stim_EEG_3lowest[2]) #know their position
 
-    #print 3nearest electrode
-    print EEG_electrodes_names_real[pos1],EEG_electrodes_names_real[pos2],EEG_electrodes_names_real[pos3]
+    #print (3nearest electrode)
+    print (EEG_electrodes_names_real[pos1],EEG_electrodes_names_real[pos2],EEG_electrodes_names_real[pos3])
 
     #Geodesicdistance with the 3 nearest electrodes
     #locator
@@ -1765,18 +1820,18 @@ class GeodesicSlicerLogic(ScriptedLoadableModuleLogic):
         dist = 0.0
 
         m = nu +1
-        #print m
+        #print (m)
         if m > 0:
             progressBar.value = 60-(60/m)
             slicer.app.processEvents()
 
-        #print vIds
+        #print (vIds)
         for n in range(len(vIds)-1):
             v0 = vIds[n]
             v1 = vIds[n+1]
             #create geodesic path: vtkDijkstraGraphGeodesicPath
             dijkstra = vtk.vtkDijkstraGraphGeodesicPath()
-            dijkstra.SetInputConnection(pd.GetOutputPolyDataConnection())
+            dijkstra.SetInputConnection(pd.GetOutputMeshConnection())
             dijkstra.SetStartVertex(v0)
             dijkstra.SetEndVertex(v1)
             dijkstra.Update()
@@ -1805,7 +1860,7 @@ class GeodesicSlicerLogic(ScriptedLoadableModuleLogic):
     return True
 
   def setMTunadjusted(self, newValue):
-    #print "MT unadjusted2:", newValue
+    #print ("MT unadjusted2:", newValue)
     self.MTunadjusted = newValue
     return self.MTunadjusted
 
@@ -1830,7 +1885,7 @@ class GeodesicSlicerLogic(ScriptedLoadableModuleLogic):
 
     #list of all mesh point
     all_mesh_points=[]
-    for i in xrange(0, inputModel.GetPolyData().GetNumberOfPoints()):
+    for i in range(0, inputModel.GetPolyData().GetNumberOfPoints()):
       p=inputModel.GetPolyData().GetPoint(i)
       all_mesh_points.append(p)
 
@@ -1843,7 +1898,7 @@ class GeodesicSlicerLogic(ScriptedLoadableModuleLogic):
     #end=end[1:6]
     index = 0
     for f in end:
-      #print f,index,end[index][0]
+      #print (f,index,end[index][0])
       if end[index][0]<0 :
         left.append(f)
       else:
@@ -1885,7 +1940,7 @@ class GeodesicSlicerLogic(ScriptedLoadableModuleLogic):
     #According to Stokes et al. Clin  Neurophysiol 2007
     # AdjMT% = MT + 2.8*(DsiteX -DM1)
     DsiteX = min(dist_list)
-    #print DsiteX,DM1,MTInput
+    #print (DsiteX,DM1,MTInput)
 
     AdjMT = MTInput + 2.8*(DsiteX - DM1)
 
